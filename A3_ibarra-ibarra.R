@@ -207,6 +207,7 @@ for (i in 1:nrow(grupos_donantes)) {
 # laboral promedio del grupo y el número de donantes usado
 
 grupos_donantes$ing_imp[is.nan(grupos_donantes$ing_imp)]<-NA
+grupos_donantes$ing_imp_pm[is.nan(grupos_donantes$ing_imp_pm)]<-NA
 
 
 # Paso 5.Unimos los valores calculados con la tabla de nas_ing 
@@ -222,7 +223,7 @@ sum(!is.na(res_ing_imp$ing_imp))/sum(nrow(res_ing_imp))*100
 # imputados es porque no se encontraron donantes con las características dadas, 
 # el valor de la columna de n_imp  es 0.
 
-res_ing_imp[is.na(res_ing_imp$ing_imp),]
+nrow(res_ing_imp[is.na(res_ing_imp$ing_imp),])
 
 # Si se desea imputar estos valores en otra iteración, podría ejecutarse el método 
 # de imputar reduciendo el número de categorías. Es importante destacar que esto
@@ -237,8 +238,13 @@ res_ing_imp[is.na(res_ing_imp$ing_imp),]
 
 personas_imp <- personas %>% 
   left_join(res_ing_imp) %>% 
-  mutate(ing_laboral_imp = coalesce(ing_laboral, ing_imp))
+  mutate(ing_laboral_imp = coalesce(ing_laboral, ing_imp),
+         ing_laboral_imp_pm = coalesce(ing_laboral, ing_imp_pm),)
 
+# La diferencia entre los valores de las columnas de ing_laboral_imp y 
+# ing_laboral_imp_pm, es que los valores imputados en la primera columna 
+# son tomando la media de ingresos y para calcular el valor de la segunda columna
+# se usa la media ponderada.
 
 # Para verificar lo realizado, calculamos nuevamente el número de valores faltantes
 # y vemos que disminuyó considerablemente. Pasando de 1236 antes de la imputación
@@ -248,3 +254,5 @@ nas_ing_imp <- personas_imp %>%
   filter(trab_remun == 1 & !is.na(trab_remun) &
            (ing_laboral_imp <= 0 | is.na(ing_laboral_imp)))
 
+# Pueden consultar nuestra solución en el siguiente repositiorio
+# https://github.com/analetty/dsci-actividad3
